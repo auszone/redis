@@ -1146,7 +1146,7 @@ int processMultibulkBuffer(client *c) {
          * so go ahead and find out the multi bulk length. */
         serverAssertWithInfo(c,NULL,c->querybuf[0] == '*');
         ok = string2ll(c->querybuf+1,newline-(c->querybuf+1),&ll);
-        if (!ok || ll > 1024*1024) {
+        if (!ok) {
             addReplyError(c,"Protocol error: invalid multibulk length");
             setProtocolError(c,pos);
             return C_ERR;
