@@ -303,8 +303,8 @@ void mgetCommand(client *c) {
 void mgetrangeCommand(client *c) {
     int j;
 
-    if((c->argc-1)%3 != 0) {
-        addReplyError(c,"wrong number of arguments for MGETRANGE");
+    if((c->argc-1) % 3 != 0) {
+        addReplyError(c,"wrong number of argcguments for MGETRANGE");
         return;
     }
 
@@ -316,11 +316,11 @@ void mgetrangeCommand(client *c) {
         size_t strlen;
 
         if (getLongLongFromObjectOrReply(c,c->argv[j+1],&start,NULL) != C_OK)
-            return;
+            continue;
         if (getLongLongFromObjectOrReply(c,c->argv[j+2],&end,NULL) != C_OK)
-            return;
-        if ((o = lookupKeyReadOrReply(c,c->argv[j],shared.emptybulk)) == NULL ||
-                checkType(c,o,OBJ_STRING)) return;
+            continue;
+        if ((o = lookupKeyReadOrReply(c,c->argv[j],shared.nullbulk)) == NULL ||
+                checkType(c,o,OBJ_STRING)) continue;
 
         if (o->encoding == OBJ_ENCODING_INT) {
             str = llbuf;
@@ -333,7 +333,7 @@ void mgetrangeCommand(client *c) {
         /* Convert negative indexes */
         if (start < 0 && end < 0 && start > end) {
             addReply(c,shared.emptybulk);
-            return;
+            continue;
         }
         if (start < 0) start = strlen+start;
         if (end < 0) end = strlen+end;
