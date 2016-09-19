@@ -300,6 +300,46 @@ void mgetCommand(client *c) {
     }
 }
 
+void mgetsuffixCommand(client *c) {
+    int j;
+
+    if((c->argc-1) % 2 != 0) {
+        addReplyError(c,"wrong number of argcguments for MGETSUFFIX");
+        return;
+    }
+
+    addReplyMultiBulkLen(c,(c->argc-1)/2);
+    for(j = 1; j < c->argc; j+=2) {
+        robj *o;
+        long long start;
+        char *str, llbuf[32];
+        size_t strlen;
+
+        if (getLongLongFromObjectOrReply(c,c->argv[j+1],&start,NULL) != C_OK)
+            continue;
+        if ((o = lookupKeyReadOrReply(c,c->argv[j],shared.nullbulk)) == NULL ||
+                checkType(c,o,OBJ_STRING)) continue;
+
+        if (o->encoding == OBJ_ENCODING_INT) {
+            str = llbuf;
+            strlen = ll2string(llbuf,sizeof(llbuf),(long)o->ptr);
+        } else {
+            str = o->ptr;
+            strlen = sdslen(str);
+        }
+
+        /* Convert negative indexes */
+        if (start < 0) start = strlen+start;
+        if ((size_t)start > strlen || strlen == 0) {
+            addReply(c,shared.emptybulk);
+            continue;
+        }
+
+        addReplyBulkCBuffer(c,(char*)str+start,strlen-start);
+    }
+
+}
+
 void mgetrangeCommand(client *c) {
     int j;
 
